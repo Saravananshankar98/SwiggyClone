@@ -1,3 +1,4 @@
+import { useNavigation } from "@react-navigation/native";
 import React, { useState } from "react";
 import {
   View,
@@ -10,29 +11,41 @@ import {
 
 const FoodItemsScreen = ({ route }: any) => {
   const { details } = route.params;
-  const [addedItems, setAddedItems] = useState<{ [key: number]: number }>({});
+  const navigation = useNavigation<any>();
+  const [addedItems, setAddedItems] = useState<{
+    [key: number]: { details: any; quantity: number };
+  }>({});
 
   const handleAddItem = (item: { id: number; name: string; price: number }) => {
     setAddedItems((prevItems) => {
-      const currentQuantity = prevItems[item.id] || 0;
-      return { ...prevItems, [item.id]: currentQuantity + 1 };
+      const currentItem = prevItems[item.id] || { details: item, quantity: 0 };
+      return {
+        ...prevItems,
+        [item.id]: { details: item, quantity: currentItem.quantity + 1 },
+      };
     });
   };
 
   const handleRemoveItem = (item: { id: number }) => {
     setAddedItems((prevItems) => {
-      const currentQuantity = prevItems[item.id];
-      if (currentQuantity === 1) {
+      const currentItem = prevItems[item.id];
+      if (currentItem.quantity === 1) {
         const newItems = { ...prevItems };
         delete newItems[item.id];
         return newItems;
       }
-      return { ...prevItems, [item.id]: currentQuantity - 1 };
+      return {
+        ...prevItems,
+        [item.id]: {
+          details: currentItem.details,
+          quantity: currentItem.quantity - 1,
+        },
+      };
     });
   };
 
   const totalQuantity = Object.values(addedItems).reduce(
-    (sum, quantity) => sum + quantity,
+    (sum, { quantity }) => sum + quantity,
     0
   );
 
@@ -57,7 +70,9 @@ const FoodItemsScreen = ({ route }: any) => {
                   >
                     <Text style={styles.iconButtonText}>-</Text>
                   </TouchableOpacity>
-                  <Text style={styles.quantityText}>{addedItems[item.id]}</Text>
+                  <Text style={styles.quantityText}>
+                    {addedItems[item.id].quantity}
+                  </Text>
                   <TouchableOpacity
                     style={styles.iconButton}
                     onPress={() => handleAddItem(item)}
@@ -81,7 +96,7 @@ const FoodItemsScreen = ({ route }: any) => {
         {totalQuantity > 0 && (
           <TouchableOpacity
             style={styles.totalContainer}
-            onPress={() => console.log("card navigate", addedItems)}
+            onPress={() => navigation.navigate("cartScreen", { addedItems })}
           >
             <Text style={styles.totalText}>
               {totalQuantity} items added to cart
@@ -114,8 +129,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 10,
     marginBottom: 15,
-    elevation: 3, // Adds shadow for Android
-    shadowColor: "#000", // Adds shadow for iOS
+    elevation: 3,
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,

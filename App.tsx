@@ -3,13 +3,17 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { StyleSheet } from "react-native";
 import FoodItemsScreen from "./src/screens/FoodItems/list";
 import HotelListScreen from "./src/screens/Hotels/list";
-
+import CartScreen from "./src/screens/Cart/list";
 
 type RootStackParamList = {
   HotelListScreen: undefined;
   FoodItemsScreen: {
-    name: string;
-    foodItems: { id: number; name: string; price: number }[];
+    details: any;
+  };
+  cartScreen: {
+    addedItems: {
+      [key: number]: { details: any; quantity: number };
+    };
   };
 };
 
@@ -27,6 +31,11 @@ export default function App() {
           name="FoodItemsScreen"
           component={FoodItemsScreen}
           options={{ title: "Food Items" }}
+        />
+        <Stack.Screen
+          name="cartScreen"
+          component={CartScreen}
+          options={{ title: "Cart" }}
         />
       </Stack.Navigator>
     </NavigationContainer>
