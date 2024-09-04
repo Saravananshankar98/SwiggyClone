@@ -8,8 +8,16 @@ import { StackNavigationProp } from "@react-navigation/stack";
 type RootStackParamList = {
   HotelListScreen: undefined;
   FoodItemsScreen: {
-    name: string;
-    foodItems: { id: number; name: string; price: number }[];
+    details: {
+      name: string;
+      location: string;
+      image: string;
+      foodItems: {
+        id: number;
+        name: string;
+        price: number;
+      }[];
+    };
   };
 };
 
@@ -30,8 +38,7 @@ const HotelListScreen = () => {
           location={hotel.location}
           onPress={() =>
             navigation.navigate("FoodItemsScreen", {
-              name: hotel.name,
-              foodItems: hotel.foodItems,
+              details: hotel,
             })
           }
         />

@@ -9,7 +9,7 @@ import {
 } from "react-native";
 
 const FoodItemsScreen = ({ route }: any) => {
-  const { name, foodItems } = route.params;
+  const { details } = route.params;
   const [addedItems, setAddedItems] = useState<{ [key: number]: number }>({});
 
   const handleAddItem = (item: { id: number; name: string; price: number }) => {
@@ -19,46 +19,75 @@ const FoodItemsScreen = ({ route }: any) => {
     });
   };
 
+  const handleRemoveItem = (item: { id: number }) => {
+    setAddedItems((prevItems) => {
+      const currentQuantity = prevItems[item.id];
+      if (currentQuantity === 1) {
+        const newItems = { ...prevItems };
+        delete newItems[item.id];
+        return newItems;
+      }
+      return { ...prevItems, [item.id]: currentQuantity - 1 };
+    });
+  };
+
+  const totalQuantity = Object.values(addedItems).reduce(
+    (sum, quantity) => sum + quantity,
+    0
+  );
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{name}</Text>
+      <Text style={styles.title}>{details.name}</Text>
+      <Text style={styles.location}>{details.location}</Text>
       <ScrollView contentContainerStyle={styles.listContainer}>
-        {foodItems.map((item: any) => (
+        {details.foodItems.map((item: any) => (
           <View key={item.id} style={styles.card}>
             <Image source={{ uri: item.image }} style={styles.foodImage} />
             <View style={styles.textContainer}>
               <Text style={styles.foodName}>{item.name}</Text>
               <Text style={styles.foodPrice}>₹ {item.price.toFixed(2)}</Text>
             </View>
-            <TouchableOpacity
-              style={styles.addButton}
-              onPress={() => handleAddItem(item)}
-            >
-              <Text style={styles.addButtonText}>Add</Text>
-            </TouchableOpacity>
+            <View style={styles.buttonContainer}>
+              {addedItems[item.id] ? (
+                <View style={styles.quantityContainer}>
+                  <TouchableOpacity
+                    style={styles.iconButton}
+                    onPress={() => handleRemoveItem(item)}
+                  >
+                    <Text style={styles.iconButtonText}>-</Text>
+                  </TouchableOpacity>
+                  <Text style={styles.quantityText}>{addedItems[item.id]}</Text>
+                  <TouchableOpacity
+                    style={styles.iconButton}
+                    onPress={() => handleAddItem(item)}
+                  >
+                    <Text style={styles.iconButtonText}>+</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <TouchableOpacity
+                  style={styles.singleButton}
+                  onPress={() => handleAddItem(item)}
+                >
+                  <Text style={styles.singleButtonText}>Add</Text>
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
         ))}
       </ScrollView>
       <View style={styles.addedItemsContainer}>
-        {Object.entries(addedItems).length > 0 && (
-          <Text style={styles.addedItemsTitle}>Added Items:</Text>
+        {totalQuantity > 0 && (
+          <TouchableOpacity
+            style={styles.totalContainer}
+            onPress={() => console.log("card navigate", addedItems)}
+          >
+            <Text style={styles.totalText}>
+              {totalQuantity} items added to cart
+            </Text>
+          </TouchableOpacity>
         )}
-        {Object.entries(addedItems).map(([id, quantity]) => {
-          const item = foodItems.find((item: any) => item.id.toString() === id);
-          return (
-            item && (
-              <View key={item.id} style={styles.addedItemCard}>
-                <Text style={styles.addedItemName}>{item.name}</Text>
-                <Text style={styles.addedItemQuantity}>
-                  Quantity: {quantity}
-                </Text>
-                <Text style={styles.addedItemPrice}>
-                  ₹ {(item.price * quantity).toFixed(2)}
-                </Text>
-              </View>
-            )
-          );
-        })}
       </View>
     </View>
   );
@@ -109,7 +138,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#666",
   },
-  addButton: {
+  buttonContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  singleButton: {
     backgroundColor: "#007bff",
     borderRadius: 8,
     paddingVertical: 8,
@@ -117,41 +150,56 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  addButtonText: {
+  singleButtonText: {
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
   },
+  iconButton: {
+    backgroundColor: "#007bff",
+    borderRadius: 8,
+    width: 30,
+    height: 30,
+    justifyContent: "center",
+    alignItems: "center",
+    marginHorizontal: 5,
+  },
+  iconButtonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  quantityContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    color: "#fff",
+  },
+  quantityText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#fff",
+    backgroundColor: "#007bff",
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    marginHorizontal: 10,
+  },
   addedItemsContainer: {
     marginTop: 20,
   },
-  addedItemsTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
-  addedItemCard: {
-    backgroundColor: "#f8f8f8",
-    borderRadius: 8,
+  totalContainer: {
     padding: 10,
+    backgroundColor: "#e0e0e0",
+    borderRadius: 8,
+    marginTop: 10,
+  },
+  totalText: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  location: {
+    fontSize: 14,
     marginBottom: 10,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-  },
-  addedItemName: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  addedItemQuantity: {
-    fontSize: 14,
-    color: "#666",
-  },
-  addedItemPrice: {
-    fontSize: 14,
-    color: "#666",
   },
 });
 
